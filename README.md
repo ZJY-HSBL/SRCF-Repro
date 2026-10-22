@@ -90,7 +90,24 @@ Full raw rows: [`benchmark.csv`](artifacts/demo/benchmark.csv) · [`benchmark.js
 ## 种子评分信号诊断 · Seed-signal diagnostic
 
 <!-- SEED_STUDY_START -->
-**待运行 / Pending independent-cohort official MovieLens-100K study.** 预先约定比较 12、40、100 部种子电影的评分信号可用性，以及 UB-CF、DR-CF、SR-CF 的配对误差；正式报告仅在官方数据上的 GitHub Actions 实验成功后生成。
+### MovieLens-100K 新目标用户种子集实验 · Seed-set follow-up
+
+**MOVIELENS-100K**, 48 new target users (earlier 96 excluded), fixed user holdouts and seed-set-size ablations.
+
+| Known ratings | UB-CF | DR-CF | SR(12) | SR(40) | SR(100) |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 0.8002 | 0.9330 | 0.9330 | 0.9330 | 0.9330 |
+| 1 | 0.8002 | 0.9252 | 0.9252 | 0.9252 | 0.9252 |
+| 3 | 0.8653 | 0.9251 | 0.9290 | 0.9287 | 0.9225 |
+| 5 | 0.8757 | 0.9250 | 0.8333 | 0.8401 | 0.8345 |
+| 10 | 0.9155 | 0.9249 | 0.8513 | 0.8700 | 0.8853 |
+
+![Seed-set sensitivity, measured](artifacts/real/seed-diagnostics/seed_count_mae.svg)
+
+![Seed similarity support, measured](artifacts/real/seed-diagnostics/seed_signal_availability.svg)
+
+[实验方案、配对区间与完整 CSV / protocol, CIs and data](docs/SEED_DIAGNOSTICS.md)
+
 <!-- SEED_STUDY_END -->
 
 ## 安装与复现 · Installation & reproduction

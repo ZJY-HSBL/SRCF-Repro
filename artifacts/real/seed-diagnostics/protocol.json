@@ -1,0 +1,43 @@
+{
+  "data_source": "MOVIELENS-100K",
+  "seed": 271828,
+  "cohort_target_count": 48,
+  "previous_cohort_excluded": 96,
+  "prior_cohort_seed": 2026,
+  "reference_and_new_target_disjoint": true,
+  "prior_cohort_fully_excluded": true,
+  "old_cohort_shape": [
+    4,
+    24
+  ],
+  "observed_budgets": [
+    0,
+    1,
+    3,
+    5,
+    10
+  ],
+  "seed_counts": [
+    12,
+    40,
+    100
+  ],
+  "methods": [
+    "ub",
+    "dr",
+    "sr12",
+    "sr40",
+    "sr100"
+  ],
+  "k": 10,
+  "ratings_held_out_per_user": 5,
+  "weights_sr": [
+    0.2,
+    0.3,
+    0.5
+  ],
+  "predictor": "normalized",
+  "bootstrap_draws": 2000,
+  "bootstrap_seed": 9301,
+  "exploratory_no_validation_tuning": true
+}

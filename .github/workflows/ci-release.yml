@@ -23,7 +23,7 @@ jobs:
       - name: Check published synthetic benchmark is reproducible
         run: |
           python -m srcf_repro.experiment --out /tmp/srcf-smoke --seed 2026
-          diff -u artifacts/demo/benchmark.csv /tmp/srcf-smoke/benchmark.csv
+          python -c "import csv; a=list(csv.DictReader(open('artifacts/demo/benchmark.csv'))); b=list(csv.DictReader(open('/tmp/srcf-smoke/benchmark.csv'))); assert a == b, 'benchmark differs'"
       - uses: actions/upload-artifact@v4
         with:
           name: synthetic-benchmark

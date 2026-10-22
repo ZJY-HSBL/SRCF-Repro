@@ -1,0 +1,5 @@
+comparison,n_users,budgets,difference_mae,ci_low,ci_high,wins_a,ties
+confidence_2 - sr,48,"3,5,10",-0.016559,-0.062367,0.03013,27,0
+confidence_2 - dr,48,"3,5,10",-0.01896,-0.075359,0.034426,23,1
+confidence_2 - ub,48,"3,5,10",-0.005814,-0.069536,0.05214,21,0
+confidence_10 - confidence_10_no_seed,48,"3,5,10",0.008943,-0.003354,0.021264,10,24

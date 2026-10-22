@@ -146,7 +146,20 @@ Full raw rows: [`benchmark.csv`](artifacts/demo/benchmark.csv) · [`benchmark.js
 新方法通过共评分样本量收缩不稳定的评分相似度，在互不重叠的验证用户中选择 $\lambda\in\{2,10,30\}$，随后在全新测试用户中与 UB-CF、DR-CF、原 SR-CF 对比。/ Shrink unreliable Pearson components; tune only on validation users, then compare on untouched test users.
 
 <!-- CONFIDENCE_STUDY_START -->
-实验待官方 MovieLens-100K CI 运行后填充。/ Measured official-data report is generated only after CI finishes.
+**Official MovieLens-100K measured experiment**: previous 144 studied users excluded, 32 validation and 48 untouched test users. Validation selected `confidence_2` on budgets 3/5/10; *test data did not choose hyperparameters*.
+
+| Observed ratings | UB-CF | DR-CF | Original SR-CF | Validation-selected confidence_2 |
+|---:|---:|---:|---:|---:|
+| 0 | 0.7653 | 0.8687 | 0.8687 | 0.8687 |
+| 1 | 0.7653 | 0.8687 | 0.8687 | 0.8687 |
+| 3 | 0.8180 | 0.8687 | 0.8623 | 0.8492 |
+| 5 | 0.8557 | 0.8687 | 0.8518 | 0.8440 |
+| 10 | 0.8929 | 0.8687 | 0.8848 | 0.8561 |
+
+![Untouched test MAE](artifacts/real/confidence/holdout_mae.svg)
+
+[完整协议、配对区间与原始 CSV / full study and evidence](docs/CONFIDENCE_STUDY.md)
+
 <!-- CONFIDENCE_STUDY_END -->
 
 ## 安装与复现 · Installation & reproduction

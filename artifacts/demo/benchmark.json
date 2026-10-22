@@ -1,0 +1,110 @@
+[
+  {
+    "mode": "ub",
+    "k": 5,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.752474,
+    "rmse": 0.999609,
+    "coverage": 0.85,
+    "n_test": 160,
+    "n_users": 32
+  },
+  {
+    "mode": "ub",
+    "k": 10,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.674771,
+    "rmse": 0.868421,
+    "coverage": 0.75,
+    "n_test": 160,
+    "n_users": 32
+  },
+  {
+    "mode": "ub",
+    "k": 20,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.706822,
+    "rmse": 0.866806,
+    "coverage": 0.733333,
+    "n_test": 160,
+    "n_users": 32
+  },
+  {
+    "mode": "dr",
+    "k": 5,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.825582,
+    "rmse": 1.077072,
+    "coverage": 0.733333,
+    "n_test": 160,
+    "n_users": 32
+  },
+  {
+    "mode": "dr",
+    "k": 10,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.642559,
+    "rmse": 0.812572,
+    "coverage": 0.65,
+    "n_test": 160,
+    "n_users": 32
+  },
+  {
+    "mode": "dr",
+    "k": 20,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.706561,
+    "rmse": 0.879339,
+    "coverage": 0.583333,
+    "n_test": 160,
+    "n_users": 32
+  },
+  {
+    "mode": "sr",
+    "k": 5,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.750459,
+    "rmse": 1.006832,
+    "coverage": 0.9,
+    "n_test": 160,
+    "n_users": 32
+  },
+  {
+    "mode": "sr",
+    "k": 10,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.649991,
+    "rmse": 0.824154,
+    "coverage": 0.733333,
+    "n_test": 160,
+    "n_users": 32
+  },
+  {
+    "mode": "sr",
+    "k": 20,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.707333,
+    "rmse": 0.862708,
+    "coverage": 0.75,
+    "n_test": 160,
+    "n_users": 32
+  }
+]

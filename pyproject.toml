@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "srcf-repro"
+version = "0.1.0"
+description = "Auditable reproduction of SR-CF for cold-start recommendation"
+requires-python = ">=3.10"
+dependencies = []
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.7"]
+test = ["pytest>=7"]
+
+[project.scripts]
+srcf-experiment = "srcf_repro.experiment:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

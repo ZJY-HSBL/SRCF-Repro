@@ -1,0 +1,56 @@
+name: CI and versioned releases
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install package with benchmark dependencies
+        run: python -m pip install -e '.[plot,test]'
+      - name: Tests
+        run: pytest
+      - name: Check published synthetic benchmark is reproducible
+        run: |
+          python -m srcf_repro.experiment --out /tmp/srcf-smoke --seed 2026
+          diff -u artifacts/demo/benchmark.csv /tmp/srcf-smoke/benchmark.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-benchmark
+          path: |
+            /tmp/srcf-smoke/benchmark.csv
+            /tmp/srcf-smoke/benchmark.json
+            /tmp/srcf-smoke/demo_mae.svg
+
+  release:
+    needs: test
+    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release: v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish GitHub Release for the version commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version="${GITHUB_HEAD_REF:-v0.1.0}"
+          version="$(printf '%s' '${{ github.event.head_commit.message }}' | sed -n 's/^release: \(v[0-9][0-9.]*\).*/\1/p')"
+          test -n "$version"
+          if gh release view "$version" >/dev/null 2>&1; then
+            echo "Release $version already exists; skipping"
+          else
+            gh release create "$version" --target "$GITHUB_SHA" \
+              --title "SRCF-Repro $version" --notes-file docs/RELEASE_NOTES.md
+          fi

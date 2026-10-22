@@ -12,9 +12,7 @@ This repository implements the chapter-4 **Similarity and Rating-based Collabora
 
 ![SR-CF workflow, source chapter 4](artifacts/figures/srcf_flow.svg)
 
-## 核心公式 · Method (LaTeX)
-
-本节使用 **GitHub 官方支持的 LaTeX / MathJax** 源码，公式不使用截图、SVG 图片或代码块。/ Equations are written as native GitHub Markdown mathematics (not images or code fences). GitHub Web renders MathJax; rendering in some GitHub mobile apps can differ.
+## 核心公式 · Method
 
 **论文 SR-CF 融合相似度 · Thesis Eq. (4.8), printed p. 34:**
 

@@ -22,3 +22,11 @@ def test_release_after_ci_and_confidence_workflow():
     assert 'experiment: v0.5.0' in research
     assert 'python -m pytest' in research
     assert 'release: v0.5.0' in research
+
+def test_math_section_contains_only_algorithm_content_not_renderer_commentary():
+    text=(ROOT/'README.md').read_text(encoding='utf-8')
+    section=text.split('## 核心公式 · Method',1)[1].split('## 数据与实测',1)[0]
+    assert 'GitHub 官方支持的 LaTeX' not in section
+    assert 'GitHub Web renders' not in section
+    assert '公式不使用截图' not in section
+    assert 'mobile apps can differ' not in section

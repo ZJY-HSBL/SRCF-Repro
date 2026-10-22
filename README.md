@@ -78,17 +78,17 @@ Full raw rows: [`benchmark.csv`](artifacts/demo/benchmark.csv) · [`benchmark.js
 <!-- STUDY_RESULTS_START -->
 ### 多批次冷启动实验 · Repeated cold-start study
 
-**SYNTHETIC**, 16 independent target users, fixed holdouts, no test-set tuning. 结果全部保留，既包括支持假设也包括反例。
+**MOVIELENS-100K**, 96 independent target users, fixed holdouts, no test-set tuning. 结果全部保留，既包括支持假设也包括反例。
 
 | Visible | ub | dr | sr | sr_no_seed | sr_no_history | sr_schedule |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0 | 1.1087 | 0.6762 | 0.6762 | 0.6762 | 0.6762 | 0.6762 |
-| 1 | 1.1099 | 0.6648 | 0.6648 | 0.6648 | 0.6648 | 0.6648 |
-| 3 | 1.0505 | 0.6699 | 0.7281 | 0.7285 | 0.6710 | 0.6789 |
-| 5 | 1.0265 | 0.6764 | 0.8417 | 0.8398 | 0.6767 | 0.6688 |
-| 10 | 0.7818 | 0.6570 | 0.7759 | 0.7482 | 0.7411 | 0.7759 |
+| 0 | 0.8556 | 0.9420 | 0.9420 | 0.9420 | 0.9420 | 0.9420 |
+| 1 | 0.8557 | 0.9542 | 0.9542 | 0.9542 | 0.9542 | 0.9542 |
+| 3 | 0.9223 | 0.9541 | 0.9481 | 0.9473 | 0.9541 | 0.9479 |
+| 5 | 0.9498 | 0.9542 | 0.9349 | 0.9537 | 0.9496 | 0.9466 |
+| 10 | 1.0219 | 0.9540 | 0.9888 | 0.9854 | 0.9549 | 0.9888 |
 
-![Measured SYNTHETIC cold-start comparisons](artifacts/experimental/synthetic-repeated/cold_start_ablations.svg)
+![Measured MOVIELENS-100K cold-start comparisons](artifacts/real/repeated/cold_start_ablations.svg)
 
 [完整实验报告、配对 Bootstrap 置信区间 / full study and CIs](docs/REPEATED_RESULTS.md)
 

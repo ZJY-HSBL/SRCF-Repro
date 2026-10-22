@@ -1,0 +1,75 @@
+name: Official MovieLens-100K benchmark and v0.2 release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    if: >-
+      github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'benchmark: ml100k')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install package and test
+        run: |
+          python -m pip install -e '.[plot,test]'
+          python -m pytest
+      - name: Download original GroupLens archive, not a rehosted copy
+        run: |
+          curl --fail --location --retry 3 --retry-delay 3 \
+            'https://files.grouplens.org/datasets/movielens/ml-100k.zip' -o /tmp/ml-100k.zip
+          unzip -q /tmp/ml-100k.zip -d /tmp/srcf-dataset
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'src')
+          from srcf_repro.data import load_movielens100k
+          ratings, profiles = load_movielens100k('/tmp/srcf-dataset/ml-100k')
+          assert len(ratings) == 943, len(ratings)
+          assert len(profiles) == 943, len(profiles)
+          assert len({i for r in ratings.values() for i in r}) == 1682
+          assert sum(map(len, ratings.values())) == 100000
+          print('Verified official MovieLens-100K: 943 users, 1682 items, 100000 ratings')
+          PY
+      - name: Warm holdout and user-disjoint cold-start experiments
+        run: |
+          python -m srcf_repro.experiment --data-dir /tmp/srcf-dataset/ml-100k \
+            --max-users 200 --seed 2026 --out artifacts/real/ml100k
+          python -m srcf_repro.experiment --data-dir /tmp/srcf-dataset/ml-100k \
+            --cold --max-users 30 --seed 2026 --out artifacts/real/cold
+          python -m srcf_repro.publish \
+            --warm artifacts/real/ml100k/benchmark.csv \
+            --cold artifacts/real/cold/cold_start.csv
+      - name: Save measured artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-movielens-100k-benchmark
+          path: |
+            artifacts/real/
+            docs/REAL_RESULTS.md
+      - name: Commit only aggregate experimental outputs
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add artifacts/real docs/REAL_RESULTS.md README.md
+          git commit -m 'docs: add independently measured MovieLens-100K results'
+          git push origin HEAD:main
+      - name: Publish release v0.2.0 after test and benchmark success
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if ! gh release view v0.2.0 >/dev/null 2>&1; then
+            gh release create v0.2.0 --target "$(git rev-parse HEAD)" \
+              --title 'SRCF-Repro v0.2.0 — MovieLens-100K measured' \
+              --notes-file docs/RELEASE_NOTES_REAL.md
+          fi

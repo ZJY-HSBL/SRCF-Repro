@@ -16,10 +16,20 @@ This repository implements the chapter-4 **Similarity and Rating-based Collabora
 
 论文第 34 页公式（4.8） / Eq. (4.8), printed p. 34:
 
-$$
-\operatorname{sim}(u,v)=\alpha D(u,v)+\beta S(u,v)+\gamma R(u,v),\qquad
-\alpha+\beta+\gamma=1.
-$$
+```math
+\operatorname{sim}(u,v)=\alpha D(u,v)+\beta S(u,v)+\gamma R(u,v),
+\qquad \alpha+\beta+\gamma=1.
+```
+
+![Equation 4.8, static SVG fallback](artifacts/figures/fusion_equation.svg)
+
+下列为**本项目单独标记的归一化修正版**，不是论文的原公式（4.4）。The normalized positive-neighbor predictor is an explicitly corrected implementation, **not** the paper's literal Eq. (4.4):
+
+```math
+\widehat{r}_{ui}^{\mathrm{norm}}=\frac{\sum_{v\in N_k^{+}(u,i)} s(u,v)r_{vi}}{\sum_{v\in N_k^{+}(u,i)} s(u,v)}
+```
+
+![Normalized positive-neighbor prediction, SVG fallback](artifacts/figures/normalized_prediction.svg)
 
 论文报告的融合权重 / Reported weights: **(α, β, γ) = (0.2, 0.3, 0.5)**. Demographics use age buckets, gender, and occupation; seed and history correlations are calculated on co-rated items.
 
@@ -57,11 +67,32 @@ Full raw rows: [`benchmark.csv`](artifacts/demo/benchmark.csv) · [`benchmark.js
 
 ## MovieLens-100K 真正实测 · Real-data evaluation
 
-真实数据已在 GitHub Actions 环境中运行，含常规留出集和固定测试项目的 0/1/3/5/10 条历史行为冷启动实验。完整表格、方法约束及 SVG 图请阅读 [真实数据实验报告 / real-data results](docs/REAL_RESULTS.md)。These are independent experiments using an explicit split, **not** an assertion that the thesis's original numerical results have been exactly reproduced.
+真实数据已在 GitHub Actions 环境中运行，含常规留出集和固定测试项目的 0/1/3/5/10 条历史行为冷启动实验。详见 [真实数据实验报告 / real-data results](docs/REAL_RESULTS.md)。**Independent real-data results, not exact numerical replication of the thesis.**
 
 ![Official MovieLens-100K benchmark](artifacts/real/ml100k/demo_mae.svg)
 
 ![Official MovieLens-100K cold-start benchmark](artifacts/real/cold/cold_start.svg)
+
+## 多随机批次冷启动 · Multi-batch cold-start evaluation
+
+<!-- STUDY_RESULTS_START -->
+### 多批次冷启动实验 · Repeated cold-start study
+
+**SYNTHETIC**, 16 independent target users, fixed holdouts, no test-set tuning. 结果全部保留，既包括支持假设也包括反例。
+
+| Visible | ub | dr | sr | sr_no_seed | sr_no_history | sr_schedule |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 1.1087 | 0.6762 | 0.6762 | 0.6762 | 0.6762 | 0.6762 |
+| 1 | 1.1099 | 0.6648 | 0.6648 | 0.6648 | 0.6648 | 0.6648 |
+| 3 | 1.0505 | 0.6699 | 0.7281 | 0.7285 | 0.6710 | 0.6789 |
+| 5 | 1.0265 | 0.6764 | 0.8417 | 0.8398 | 0.6767 | 0.6688 |
+| 10 | 0.7818 | 0.6570 | 0.7759 | 0.7482 | 0.7411 | 0.7759 |
+
+![Measured SYNTHETIC cold-start comparisons](artifacts/experimental/synthetic-repeated/cold_start_ablations.svg)
+
+[完整实验报告、配对 Bootstrap 置信区间 / full study and CIs](docs/REPEATED_RESULTS.md)
+
+<!-- STUDY_RESULTS_END -->
 
 ## 安装与复现 · Installation & reproduction
 
@@ -88,11 +119,12 @@ python -m srcf_repro.experiment --data-dir ./ml-100k --max-users 200 --predictio
 
 - `src/srcf_repro/model.py` — three modes, mixed similarities, literal/normalized score prediction.
 - `src/srcf_repro/data.py` — train/test split, popularity-based seed selection, official `u.data` / `u.user` parser.
-- `src/srcf_repro/experiment.py` — deterministic MAE/RMSE/coverage benchmark and SVG export; synthetic cold-start protocol callable via `cold_start_curve`.
+- `src/srcf_repro/experiment.py` — deterministic MAE/RMSE/coverage benchmarks and SVG export.
+- `src/srcf_repro/studies.py` — pre-registered ablations, user-disjoint repeated cold-start studies, subject-level paired bootstrap; automatically generates data/report/SVG.
 - `tests/` — mathematical edge cases, reproducibility, train/test isolation, and smoke results.
 - `.github/workflows/ci-release.yml` — quality gate and release-on-version-commit workflow.
 
-Next / 下一步：首先完成完整 MovieLens-100K 多随机种子实验，基于论文原始与修正评分器分别报告结果；然后在固定测试集上进行 0/1/3/5/10 条交互的真正冷启动对照与融合权重消融，最后才考虑动态权重机制。Do not tune on the reported test set.
+Next / 下一步：本版本执行严格用户隔离的多批次重复实验、固定权重消融及探索性分段权重比较。后续将在独立验证集上调参，并在全新数据集上确认，而不能凭单轮实验宣称创新有效。 / Multiple user-disjoint batches and paired bootstrap intervals precede any validation-only tuning and external confirmation.
 
 ## 引用 · Citation
 

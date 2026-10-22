@@ -1,0 +1,71 @@
+name: Confirmatory infrastructure — repeated MovieLens cold-start study
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  study:
+    if: startsWith(github.event.head_commit.message, 'experiment: v0.3.0')
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install and run unit tests
+        run: |
+          python -m pip install -e '.[plot,test]'
+          python -m pytest
+      - name: Fetch original official data and verify dataset fingerprint
+        run: |
+          curl --fail --location --retry 3 --retry-delay 5 \
+            'https://files.grouplens.org/datasets/movielens/ml-100k.zip' -o /tmp/ml-100k.zip
+          unzip -q /tmp/ml-100k.zip -d /tmp/srcf-original
+          python - <<'PY'
+          from srcf_repro.data import load_movielens100k
+          ratings, profiles = load_movielens100k('/tmp/srcf-original/ml-100k')
+          assert len(ratings) == len(profiles) == 943
+          assert sum(map(len, ratings.values())) == 100_000
+          assert len({item for r in ratings.values() for item in r}) == 1682
+          print('Verified GroupLens 100K: 943 users, 1682 movies, 100000 ratings')
+          PY
+      - name: Four disjoint batches (96 new-user targets), paired bootstrap and SVG plots
+        run: |
+          python -m srcf_repro.studies \
+            --data-dir /tmp/srcf-original/ml-100k \
+            --seed 2026 --batches 4 --users-per-batch 24 \
+            --out artifacts/real/repeated
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+          p = Path('artifacts/real/repeated')
+          a = list(csv.DictReader((p/'per_user.csv').open()))
+          assert len(a) == 4*24*5*6, len(a)
+          assert len({r['case'] for r in a}) == 96
+          assert all(int(r['n_test']) > 0 for r in a)
+          assert 'MOVIELENS-100K' in Path('docs/REPEATED_RESULTS.md').read_text()
+          print('Verified 2880 user-method-budget evaluations on unique subjects')
+          PY
+      - name: Preserve outputs for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: movielens-repeated-study-v0.3
+          path: |
+            artifacts/real/repeated/
+            docs/REPEATED_RESULTS.md
+            README.md
+      - name: Commit actual measurements and trigger v0.3.0 Release after CI
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md docs/REPEATED_RESULTS.md artifacts/real/repeated
+          git diff --cached --quiet && { echo 'ERROR: expected new actual measurements'; exit 1; }
+          git commit -m 'release: v0.3.0 repeated measured MovieLens experiments'
+          git push origin HEAD:main

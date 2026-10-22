@@ -34,7 +34,8 @@ jobs:
 
   release:
     needs: test
-    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release: v')
+    if: >-
+      github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release: v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -45,7 +46,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          version="${GITHUB_HEAD_REF:-v0.1.0}"
           version="$(printf '%s' '${{ github.event.head_commit.message }}' | sed -n 's/^release: \(v[0-9][0-9.]*\).*/\1/p')"
           test -n "$version"
           if gh release view "$version" >/dev/null 2>&1; then

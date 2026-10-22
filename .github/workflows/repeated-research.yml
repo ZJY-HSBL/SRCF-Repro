@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   study:
-    if: startsWith(github.event.head_commit.message, 'experiment: v0.3.0')
+    if: "${{ startsWith(github.event.head_commit.message, 'experiment: v0.3.0') }}"
     runs-on: ubuntu-latest
     timeout-minutes: 55
     permissions:

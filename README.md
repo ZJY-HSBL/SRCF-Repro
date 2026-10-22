@@ -110,6 +110,12 @@ Full raw rows: [`benchmark.csv`](artifacts/demo/benchmark.csv) · [`benchmark.js
 
 <!-- SEED_STUDY_END -->
 
+### 结果解读 · Interpretation
+
+**新目标用户真实实验 / Newly sampled MovieLens-100K users:** 在 3 条历史评分且只使用 12 部种子电影时，**0/48** 位目标用户具有可用的非零种子评分相似度；在 10 条历史评分时比例为 **14.6%**。扩展为 100 部种子电影能把 10 条交互下的信号可用率提升至 **81.2%**，但对应 SR-CF 的 MAE 从 0.8513 增加至 0.8853，**更多种子不必然提高准确率**。
+
+**重要负面结果 / Important counterexample:** 对零历史评分的新用户，UB-CF 通过训练集项目均值回退实现 MAE **0.8002**，优于 DR-CF/SR-CF 的 **0.9330**。这些实验属于单数据集探索性验证，不声称具有统计确认的优越性。下一版将检验基于共评分数量的相似度置信收缩，并使用严格隔离的验证用户选择超参数。
+
 ## 安装与复现 · Installation & reproduction
 
 Python **3.10+**:

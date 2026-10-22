@@ -31,7 +31,7 @@ $$
 |---|---|---|
 | Thesis Table 4.2 | Published coverage comparison / 原论文覆盖率比较 | **Reported only / 论文报告** |
 | Synthetic: 42 users, 60 items, 1,092 ratings | Functionality smoke benchmark / 功能验证 | **Actually executed / 已运行** |
-| MovieLens-100K | Genuine replication evaluation / 真实数据复现 | **Not yet executed / 尚未运行** |
+| MovieLens-100K | Genuine replication evaluation / 真实数据复现 | **Real experiment complete / 已完成真实实验** |
 
 ![Coverage transcribed from the thesis, NOT reproduced](artifacts/figures/paper_coverage.svg)
 
@@ -54,6 +54,14 @@ $$
 在合成实验中，SR-CF 并非全面领先。例如 k=10 时 DR-CF 更好，且模型之间的差异较小。后续重点是 **在独立真实数据上检验权重与种子集的有效性**，不能根据上述结果宣称论文性能已被复现。 / SR-CF does not dominate in this synthetic experiment (e.g. DR-CF has lower MAE at k=10). No published-paper performance claim is inferred from this toy result.
 
 Full raw rows: [`benchmark.csv`](artifacts/demo/benchmark.csv) · [`benchmark.json`](artifacts/demo/benchmark.json). Coverage data transcribed verbatim: [`paper_coverage.csv`](artifacts/paper_coverage.csv).
+
+## MovieLens-100K 真正实测 · Real-data evaluation
+
+真实数据已在 GitHub Actions 环境中运行，含常规留出集和固定测试项目的 0/1/3/5/10 条历史行为冷启动实验。完整表格、方法约束及 SVG 图请阅读 [真实数据实验报告 / real-data results](docs/REAL_RESULTS.md)。These are independent experiments using an explicit split, **not** an assertion that the thesis's original numerical results have been exactly reproduced.
+
+![Official MovieLens-100K benchmark](artifacts/real/ml100k/demo_mae.svg)
+
+![Official MovieLens-100K cold-start benchmark](artifacts/real/cold/cold_start.svg)
 
 ## 安装与复现 · Installation & reproduction
 

@@ -1,0 +1,110 @@
+[
+  {
+    "mode": "ub",
+    "k": 5,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.86443,
+    "rmse": 1.088258,
+    "coverage": 0.132156,
+    "n_test": 3940,
+    "n_users": 200
+  },
+  {
+    "mode": "ub",
+    "k": 10,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.880488,
+    "rmse": 1.119122,
+    "coverage": 0.123021,
+    "n_test": 3940,
+    "n_users": 200
+  },
+  {
+    "mode": "ub",
+    "k": 20,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.885947,
+    "rmse": 1.12964,
+    "coverage": 0.118758,
+    "n_test": 3940,
+    "n_users": 200
+  },
+  {
+    "mode": "dr",
+    "k": 5,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.931086,
+    "rmse": 1.206082,
+    "coverage": 0.101705,
+    "n_test": 3940,
+    "n_users": 200
+  },
+  {
+    "mode": "dr",
+    "k": 10,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.957597,
+    "rmse": 1.237065,
+    "coverage": 0.093788,
+    "n_test": 3940,
+    "n_users": 200
+  },
+  {
+    "mode": "dr",
+    "k": 20,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.935428,
+    "rmse": 1.201932,
+    "coverage": 0.09866,
+    "n_test": 3940,
+    "n_users": 200
+  },
+  {
+    "mode": "sr",
+    "k": 5,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.86976,
+    "rmse": 1.106015,
+    "coverage": 0.138855,
+    "n_test": 3940,
+    "n_users": 200
+  },
+  {
+    "mode": "sr",
+    "k": 10,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.889137,
+    "rmse": 1.13813,
+    "coverage": 0.113886,
+    "n_test": 3940,
+    "n_users": 200
+  },
+  {
+    "mode": "sr",
+    "k": 20,
+    "prediction": "normalized",
+    "seed": 2026,
+    "seed_items": 12,
+    "mae": 0.899466,
+    "rmse": 1.149908,
+    "coverage": 0.115713,
+    "n_test": 3940,
+    "n_users": 200
+  }
+]

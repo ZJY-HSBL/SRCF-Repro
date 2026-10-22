@@ -1,0 +1,99 @@
+name: SR-CF confidence support study — validation / untouched test (v0.5)
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  confidence-study:
+    if: "${{ startsWith(github.event.head_commit.message, 'experiment: v0.5.0') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install and test all algorithms before accessing official data
+        run: |
+          python -m pip install -e '.[plot,test]'
+          python -m pytest
+      - name: Download GroupLens source; verify complete official dataset
+        run: |
+          curl --fail --location --retry 3 --retry-delay 4 \
+            https://files.grouplens.org/datasets/movielens/ml-100k.zip -o /tmp/srcf-100k.zip
+          unzip -q /tmp/srcf-100k.zip -d /tmp/srcf-raw
+          python - <<'PY'
+          from srcf_repro.data import load_movielens100k
+          r,p=load_movielens100k('/tmp/srcf-raw/ml-100k')
+          assert len(r)==len(p)==943
+          assert len({i for rs in r.values() for i in rs})==1682
+          assert sum(map(len,r.values()))==100000
+          print('Verified GroupLens MovieLens-100K source and size')
+          PY
+      - name: Select shrinkage on validation users; evaluate untouched test users
+        run: |
+          python -m srcf_repro.confirmatory \
+            --data-dir /tmp/srcf-raw/ml-100k \
+            --validation-users 32 --test-users 48 --seed 314159 \
+            --out artifacts/real/confidence
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+          p=Path('artifacts/real/confidence')
+          protocol=json.loads((p/'protocol.json').read_text())
+          assert protocol['source']=='MOVIELENS-100K'
+          assert protocol['prior_users_excluded']==144
+          assert protocol['n_val_users']==32
+          assert protocol['n_test_users']==48
+          assert protocol['selected'] in {'confidence_2','confidence_10','confidence_30'}
+          va=list(csv.DictReader((p/'validation_per_user.csv').open()))
+          te=list(csv.DictReader((p/'test_per_user.csv').open()))
+          assert len(va)==32*5*7 and len(te)==48*5*7
+          assert not ({r['case'] for r in va}&{r['case'] for r in te})
+          assert all(int(row['n_test'])>0 for row in va+te)
+          assert 'MOVIELENS-100K' in Path('docs/CONFIDENCE_STUDY.md').read_text()
+          print('Verified frozen hyperparameter selection, 32+48 disjoint new users')
+          PY
+      - name: Generate measured README result snippet without test-score tuning
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import csv,json
+          base=Path('artifacts/real/confidence')
+          protocol=json.loads((base/'protocol.json').read_text())
+          chosen=protocol['selected']
+          rows=list(csv.DictReader((base/'summary.csv').open()))
+          table='| Observed ratings | UB-CF | DR-CF | Original SR-CF | Validation-selected '+chosen+' |\n|---:|---:|---:|---:|---:|\n'
+          for n in (0,1,3,5,10):
+            found={r['method']:float(r['mean_user_mae']) for r in rows if r['cohort']=='test' and int(r['observed'])==n}
+            table+=f"| {n} | {found['ub']:.4f} | {found['dr']:.4f} | {found['sr']:.4f} | {found[chosen]:.4f} |\n"
+          excerpt=(f'**Official MovieLens-100K measured experiment**: previous 144 studied users excluded, 32 validation and 48 untouched test users. '
+                   f'Validation selected `{chosen}` on budgets 3/5/10; *test data did not choose hyperparameters*.\n\n'
+                   +table+'\n![Untouched test MAE](artifacts/real/confidence/holdout_mae.svg)\n\n'
+                   +'[完整协议、配对区间与原始 CSV / full study and evidence](docs/CONFIDENCE_STUDY.md)\n')
+          p=Path('README.md'); text=p.read_text()
+          before='<!-- CONFIDENCE_STUDY_START -->'; after='<!-- CONFIDENCE_STUDY_END -->'
+          assert before in text and after in text
+          p.write_text(text.split(before,1)[0]+before+'\n'+excerpt+'\n'+after+text.split(after,1)[1])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: srcf-official-validation-test-v0.5
+          path: |
+            artifacts/real/confidence/
+            docs/CONFIDENCE_STUDY.md
+            README.md
+      - name: Commit aggregate measurements, evidence, and trigger CI-gated v0.5.0 Release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md docs/CONFIDENCE_STUDY.md artifacts/real/confidence
+          git diff --cached --quiet && { echo 'Expected new real-data evidence'; exit 1; }
+          git commit -m 'release: v0.5.0 validated confidence-shrinkage experiment'
+          git push origin HEAD:main

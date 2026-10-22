@@ -12,21 +12,46 @@ This repository implements the chapter-4 **Similarity and Rating-based Collabora
 
 ![SR-CF workflow, source chapter 4](artifacts/figures/srcf_flow.svg)
 
-## 核心公式 · Method
+## 核心公式 · Method (LaTeX)
 
-论文第 34 页公式（4.8） / Eq. (4.8), printed p. 34. **跨主题静态公式图 / theme-independent rendered equation:**
+本节使用 **GitHub 官方支持的 LaTeX / MathJax** 源码，公式不使用截图、SVG 图片或代码块。/ Equations are written as native GitHub Markdown mathematics (not images or code fences). GitHub Web renders MathJax; rendering in some GitHub mobile apps can differ.
 
-![SR-CF fusion similarity: sim(u,v) = alpha D(u,v) + beta S(u,v) + gamma R(u,v), with alpha + beta + gamma = 1](artifacts/figures/fusion_equation.svg)
+**论文 SR-CF 融合相似度 · Thesis Eq. (4.8), printed p. 34:**
 
-下列为**本项目单独标记的归一化修正版**，不是论文的原公式（4.4）。 / The following predictor is explicitly corrected, **not the paper's literal Eq. (4.4)**:
+$$
+\operatorname{Sim}(u,v)=\alpha D(u,v)+\beta S(u,v)+\gamma R(u,v)
+$$
 
-![Corrected weighted prediction: sum of positive neighbor similarities times rating, divided by total positive neighbor similarity](artifacts/figures/normalized_prediction.svg)
+$$
+\alpha+\beta+\gamma=1,\qquad (\alpha,\beta,\gamma)=(0.2,0.3,0.5)
+$$
 
-GitHub iOS/iPad 客户端可能将数学代码块当作普通代码；此处因此**只显示可缩放公式图**，不再显示未渲染的 LaTeX 源码。SVG 含固定浅色背景，可在深浅主题阅读。 / Images are deliberately used instead of raw LaTeX, with a fixed light background for GitHub light/dark themes.
+其中 / where $D(u,v)$ is demographic similarity, $S(u,v)$ is similarity on seed-item ratings and $R(u,v)$ is similarity on observed historical ratings. **The thesis's Eq. (4.4) is an *unnormalized sum***; `--prediction paper` preserves it without normalization or clipping.
 
-论文报告的融合权重 / Reported weights: **(α, β, γ) = (0.2, 0.3, 0.5)**. Demographics use age buckets, gender, and occupation; seed and history correlations are calculated on co-rated items.
+**本项目的归一化预测器 · Independently corrected normalized predictor (NOT the thesis Eq. 4.4):**
 
-**Important: Equation (4.4) is an unnormalized sum.** `--prediction paper` preserves it. The default `--prediction normalized` deliberately uses a normalized positive-neighbor mean and train-only fallback. Both are implemented and must be **reported separately**.
+$$
+\widehat r_{ui}=\frac{\sum_{v\in N_k^{+}(u,i)}\operatorname{Sim}(u,v)\,r_{vi}}{\sum_{v\in N_k^{+}(u,i)}\operatorname{Sim}(u,v)}
+$$
+
+这里 $N_k^{+}(u,i)$ 表示对电影 $i$ 评分且与目标用户具有正相似度的选中邻居。如果分母为零，则使用**仅由训练集**计算的项目均值或全局均值回退。原论文公式与修正版务必分开评价。
+
+**本项目 v0.5.0 研究假设（非原论文算法）· Support-confidence hypothesis:**
+
+$$
+q(n;\lambda)=\begin{cases}
+0,&n<2\text{ or similarity is undefined},\\
+\dfrac{n}{n+\lambda},&n\ge2\text{ and similarity is defined}.
+\end{cases}
+$$
+
+$$
+\operatorname{Sim}_{\lambda}(u,v)=
+\frac{\alpha D(u,v)+\beta q(n_S;\lambda)S(u,v)+\gamma q(n_R;\lambda)R(u,v)}
+{\alpha+\beta q(n_S;\lambda)+\gamma q(n_R;\lambda)}
+$$
+
+式中 $n_S$ 与 $n_R$ 分别是共同种子评分与共同历史评分数量。$\lambda$ 只从验证用户中选择，再锁定参数测试未见用户。公式实现见 [`confidence.py`](src/srcf_repro/confidence.py)，协议见 [`confirmatory.py`](src/srcf_repro/confirmatory.py)。此方案是有待验证的机制，不能提前声称带来提升。
 
 ## 数据与实测 · Data & measured results
 
@@ -115,6 +140,14 @@ Full raw rows: [`benchmark.csv`](artifacts/demo/benchmark.csv) · [`benchmark.js
 **新目标用户真实实验 / Newly sampled MovieLens-100K users:** 在 3 条历史评分且只使用 12 部种子电影时，**0/48** 位目标用户具有可用的非零种子评分相似度；在 10 条历史评分时比例为 **14.6%**。扩展为 100 部种子电影能把 10 条交互下的信号可用率提升至 **81.2%**，但对应 SR-CF 的 MAE 从 0.8513 增加至 0.8853，**更多种子不必然提高准确率**。
 
 **重要负面结果 / Important counterexample:** 对零历史评分的新用户，UB-CF 通过训练集项目均值回退实现 MAE **0.8002**，优于 DR-CF/SR-CF 的 **0.9330**。这些实验属于单数据集探索性验证，不声称具有统计确认的优越性。下一版将检验基于共评分数量的相似度置信收缩，并使用严格隔离的验证用户选择超参数。
+
+## 可信度自适应实验 · Validation-frozen confidence study (v0.5.0)
+
+新方法通过共评分样本量收缩不稳定的评分相似度，在互不重叠的验证用户中选择 $\lambda\in\{2,10,30\}$，随后在全新测试用户中与 UB-CF、DR-CF、原 SR-CF 对比。/ Shrink unreliable Pearson components; tune only on validation users, then compare on untouched test users.
+
+<!-- CONFIDENCE_STUDY_START -->
+实验待官方 MovieLens-100K CI 运行后填充。/ Measured official-data report is generated only after CI finishes.
+<!-- CONFIDENCE_STUDY_END -->
 
 ## 安装与复现 · Installation & reproduction
 

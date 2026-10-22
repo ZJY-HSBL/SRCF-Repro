@@ -1,9 +1,8 @@
-# v0.4.0 — Mobile-readable formulas and seed-set diagnostic
+# v0.5.0 — Native LaTeX and validation-frozen confidence study
 
-- Removed raw LaTeX code blocks that the GitHub iPad/iOS client displayed literally; used fixed-background SVG mathematical equations as the only visual formula representation.
-- Added regression tests to ensure math images have a white background and README does not contain raw math fences.
-- Evaluated (upon verified workflow completion) an entirely new, previously unevaluated target-user cohort from official MovieLens-100K, excluding the 96 old target users from both target and reference pools.
-- Introduced predeclared comparisons of top 12, 40 and 100 most-popular train-only seed movies, along with DR-CF and UB-CF, under the same fixed five-rating test holdouts and nested cold-start budgets.
-- Logged per-user prediction error, the fraction of users with usable seed-rating similarities, paired exploratory bootstraps and visualized curves. No claims of numerical replication or statistically confirmed improvement.
-
-See `docs/SEED_DIAGNOSTICS.md` for actual measured numbers only after the official-data study workflow has completed.
+- README equations converted to editable, native GitHub LaTeX (`$$...$$`), rather than SVG screenshots or fenced code. GitHub **web** rendering is documented; not all mobile clients are guaranteed to display MathJax.
+- Introduced reliability-dependent Pearson component shrinkage with a per-pair normalized mixture, explicitly **not** part of the original thesis.
+- Strictly excluded the earlier 144 exploratory users, including them neither in new reference nor evaluation cohorts.
+- Selected shrinkage parameter **only** on 32 new validation users; evaluate the frozen candidate on **48 untouched test users**, 0/1/3/5/10 observed ratings, compared against SR-CF, UB-CF, DR-CF and a no-seed ablation.
+- Added per-user CSV, full protocol, exploratory paired bootstrap (clustered by user across observation budgets), SVG test curves and a bilingual analysis report.
+- Do **not** claim positive performance improvements until actually measured, and do not confuse in-dataset independent-user holdout with external-dataset replication.

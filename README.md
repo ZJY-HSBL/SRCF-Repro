@@ -14,22 +14,15 @@ This repository implements the chapter-4 **Similarity and Rating-based Collabora
 
 ## 核心公式 · Method
 
-论文第 34 页公式（4.8） / Eq. (4.8), printed p. 34:
+论文第 34 页公式（4.8） / Eq. (4.8), printed p. 34. **跨主题静态公式图 / theme-independent rendered equation:**
 
-```math
-\operatorname{sim}(u,v)=\alpha D(u,v)+\beta S(u,v)+\gamma R(u,v),
-\qquad \alpha+\beta+\gamma=1.
-```
+![SR-CF fusion similarity: sim(u,v) = alpha D(u,v) + beta S(u,v) + gamma R(u,v), with alpha + beta + gamma = 1](artifacts/figures/fusion_equation.svg)
 
-![Equation 4.8, static SVG fallback](artifacts/figures/fusion_equation.svg)
+下列为**本项目单独标记的归一化修正版**，不是论文的原公式（4.4）。 / The following predictor is explicitly corrected, **not the paper's literal Eq. (4.4)**:
 
-下列为**本项目单独标记的归一化修正版**，不是论文的原公式（4.4）。The normalized positive-neighbor predictor is an explicitly corrected implementation, **not** the paper's literal Eq. (4.4):
+![Corrected weighted prediction: sum of positive neighbor similarities times rating, divided by total positive neighbor similarity](artifacts/figures/normalized_prediction.svg)
 
-```math
-\widehat{r}_{ui}^{\mathrm{norm}}=\frac{\sum_{v\in N_k^{+}(u,i)} s(u,v)r_{vi}}{\sum_{v\in N_k^{+}(u,i)} s(u,v)}
-```
-
-![Normalized positive-neighbor prediction, SVG fallback](artifacts/figures/normalized_prediction.svg)
+GitHub iOS/iPad 客户端可能将数学代码块当作普通代码；此处因此**只显示可缩放公式图**，不再显示未渲染的 LaTeX 源码。SVG 含固定浅色背景，可在深浅主题阅读。 / Images are deliberately used instead of raw LaTeX, with a fixed light background for GitHub light/dark themes.
 
 论文报告的融合权重 / Reported weights: **(α, β, γ) = (0.2, 0.3, 0.5)**. Demographics use age buckets, gender, and occupation; seed and history correlations are calculated on co-rated items.
 
@@ -78,21 +71,27 @@ Full raw rows: [`benchmark.csv`](artifacts/demo/benchmark.csv) · [`benchmark.js
 <!-- STUDY_RESULTS_START -->
 ### 多批次冷启动实验 · Repeated cold-start study
 
-**MOVIELENS-100K**, 96 independent target users, fixed holdouts, no test-set tuning. 结果全部保留，既包括支持假设也包括反例。
+**SYNTHETIC**, 16 independent target users, fixed holdouts, no test-set tuning. 结果全部保留，既包括支持假设也包括反例。
 
 | Visible | ub | dr | sr | sr_no_seed | sr_no_history | sr_schedule |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0 | 0.8556 | 0.9420 | 0.9420 | 0.9420 | 0.9420 | 0.9420 |
-| 1 | 0.8557 | 0.9542 | 0.9542 | 0.9542 | 0.9542 | 0.9542 |
-| 3 | 0.9223 | 0.9541 | 0.9481 | 0.9473 | 0.9541 | 0.9479 |
-| 5 | 0.9498 | 0.9542 | 0.9349 | 0.9537 | 0.9496 | 0.9466 |
-| 10 | 1.0219 | 0.9540 | 0.9888 | 0.9854 | 0.9549 | 0.9888 |
+| 0 | 1.1087 | 0.6762 | 0.6762 | 0.6762 | 0.6762 | 0.6762 |
+| 1 | 1.1099 | 0.6648 | 0.6648 | 0.6648 | 0.6648 | 0.6648 |
+| 3 | 1.0505 | 0.6699 | 0.7281 | 0.7285 | 0.6710 | 0.6789 |
+| 5 | 1.0265 | 0.6764 | 0.8417 | 0.8398 | 0.6767 | 0.6688 |
+| 10 | 0.7818 | 0.6570 | 0.7759 | 0.7482 | 0.7411 | 0.7759 |
 
-![Measured MOVIELENS-100K cold-start comparisons](artifacts/real/repeated/cold_start_ablations.svg)
+![Measured SYNTHETIC cold-start comparisons](artifacts/experimental/synthetic-repeated/cold_start_ablations.svg)
 
 [完整实验报告、配对 Bootstrap 置信区间 / full study and CIs](docs/REPEATED_RESULTS.md)
 
 <!-- STUDY_RESULTS_END -->
+
+## 种子评分信号诊断 · Seed-signal diagnostic
+
+<!-- SEED_STUDY_START -->
+**待运行 / Pending independent-cohort official MovieLens-100K study.** 预先约定比较 12、40、100 部种子电影的评分信号可用性，以及 UB-CF、DR-CF、SR-CF 的配对误差；正式报告仅在官方数据上的 GitHub Actions 实验成功后生成。
+<!-- SEED_STUDY_END -->
 
 ## 安装与复现 · Installation & reproduction
 
@@ -123,6 +122,7 @@ python -m srcf_repro.experiment --data-dir ./ml-100k --max-users 200 --predictio
 - `src/srcf_repro/studies.py` — pre-registered ablations, user-disjoint repeated cold-start studies, subject-level paired bootstrap; automatically generates data/report/SVG.
 - `tests/` — mathematical edge cases, reproducibility, train/test isolation, and smoke results.
 - `.github/workflows/ci-release.yml` — quality gate and release-on-version-commit workflow.
+- `src/srcf_repro/seed_diagnostics.py` — independent exploratory target cohort, seed-count ablations, paired estimates and support diagnostics.
 
 Next / 下一步：本版本执行严格用户隔离的多批次重复实验、固定权重消融及探索性分段权重比较。后续将在独立验证集上调参，并在全新数据集上确认，而不能凭单轮实验宣称创新有效。 / Multiple user-disjoint batches and paired bootstrap intervals precede any validation-only tuning and external confirmation.
 

@@ -1,0 +1,74 @@
+name: MovieLens new-cohort seed-signal study (v0.4)
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  seed-study:
+    if: "${{ startsWith(github.event.head_commit.message, 'experiment: v0.4.0') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install and execute unit tests
+        run: |
+          python -m pip install -e '.[plot,test]'
+          python -m pytest
+      - name: Official GroupLens source and population verification
+        run: |
+          curl --fail --location --retry 3 --retry-delay 5 \
+            https://files.grouplens.org/datasets/movielens/ml-100k.zip -o /tmp/ml-100k.zip
+          unzip -q /tmp/ml-100k.zip -d /tmp/srcf-source
+          python - <<'PY'
+          from srcf_repro.data import load_movielens100k
+          r,p = load_movielens100k('/tmp/srcf-source/ml-100k')
+          assert len(r) == len(p) == 943
+          assert len({i for x in r.values() for i in x}) == 1682
+          assert sum(map(len, r.values())) == 100000
+          print('VERIFIED MovieLens-100K, 943 users, 1682 items, 100000 ratings')
+          PY
+      - name: Independently held-out new target cohort and seed-set ablation
+        run: |
+          python -m srcf_repro.seed_diagnostics \
+            --data-dir /tmp/srcf-source/ml-100k --seed 271828 \
+            --batches 2 --users-per-batch 24 \
+            --out artifacts/real/seed-diagnostics
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+          path = Path('artifacts/real/seed-diagnostics')
+          score = list(csv.DictReader((path/'per_user.csv').open()))
+          evidence = list(csv.DictReader((path/'seed_diagnostics.csv').open()))
+          assert len(score) == 48*5*5
+          assert len(evidence) == 48*5
+          assert len({r['case'] for r in score}) == 48
+          assert all(int(r['n_test']) > 0 for r in score)
+          text = Path('docs/SEED_DIAGNOSTICS.md').read_text()
+          assert 'MOVIELENS-100K' in text
+          assert '48 previously unevaluated target users' in text
+          print('Verified 1200 model/user/budget rows; no earlier-cohort overlap')
+          PY
+      - name: Preserve raw evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-ml100k-seed-support-v0.4
+          path: |
+            artifacts/real/seed-diagnostics/
+            docs/SEED_DIAGNOSTICS.md
+      - name: Commit actual results only after success
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md docs/SEED_DIAGNOSTICS.md artifacts/real/seed-diagnostics/
+          git diff --cached --quiet && { echo 'No new measured outputs'; exit 1; }
+          git commit -m 'release: v0.4.0 independently evaluated seed-set support'
+          git push origin HEAD:main

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "srcf-repro"
-version = "0.3.0"
+version = "0.4.0"
 description = "Auditable reproduction of SR-CF for cold-start recommendation"
 requires-python = ">=3.10"
 dependencies = []

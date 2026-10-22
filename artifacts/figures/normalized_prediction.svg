@@ -27,7 +27,7 @@ L 200.8 0
 L 0 0 
 L 0 105.2 
 z
-" style="fill: none"/>
+" style="fill: #ffffff"/>
   </g>
   <g id="text_1">
    <!-- $\hat{r}_{ui}=\frac{\sum_{v\in N^+_k(u,i)}s(u,v)\,r_{vi}}{\sum_{v\in N^+_k(u,i)}s(u,v)}$ -->

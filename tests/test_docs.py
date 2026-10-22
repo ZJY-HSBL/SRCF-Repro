@@ -1,23 +1,28 @@
 from pathlib import Path
 
 
-def test_github_markdown_math_has_svg_fallbacks():
+def test_github_readme_formula_images_do_not_expose_latex_source():
     root = Path(__file__).resolve().parents[1]
-    text = (root / "README.md").read_text(encoding="utf-8")
-    assert text.count('```math\n') == 2
-    assert '\\operatorname{sim}(u,v)' in text
-    assert '\\widehat{r}_{ui}' in text
+    text = (root / 'README.md').read_text(encoding='utf-8')
+    # GitHub iOS displays ```math as raw code. Keep formula images, not fences.
+    assert '```math' not in text
+    assert '$$' not in text
+    assert '\\widehat{' not in text
     for f in ('fusion_equation.svg', 'normalized_prediction.svg'):
         svg = root / 'artifacts' / 'figures' / f
         assert f in text
         assert svg.is_file()
-        assert '<svg' in svg.read_text(encoding='utf-8')
+        xml = svg.read_text(encoding='utf-8')
+        assert '<svg' in xml
+        assert 'style="fill: #ffffff"' in xml
 
 
-def test_study_publishing_is_tied_to_verified_ci():
+def test_release_and_followup_are_behind_ci():
     root = Path(__file__).resolve().parents[1]
-    text = (root / '.github/workflows/repeated-research.yml').read_text()
-    assert 'git commit -m \'release: v0.3.0' in text
-    assert "python -m pytest" in text
-    assert '--data-dir /tmp/srcf-original/ml-100k' in text
-    assert 'startsWith(github.event.head_commit.message' in text
+    main = (root / '.github/workflows/ci-release.yml').read_text()
+    followup = (root / '.github/workflows/seed-followup.yml').read_text()
+    assert "startsWith(github.event.head_commit.message, 'release: v')" in main
+    assert 'experiment: v0.4.0' in followup
+    assert 'python -m pytest' in followup
+    assert 'seed_diagnostics' in followup
+    assert 'release: v0.4.0' in followup
